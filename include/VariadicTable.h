@@ -3,7 +3,6 @@
 #include <iostream>
 #include <iomanip>
 #include <ios>
-#include <system_error>
 #include <vector>
 #include <tuple>
 #include <type_traits>
@@ -158,43 +157,43 @@ public:
   template <typename StreamType>
   void print_latex(StreamType & stream, char column_type = 'c', bool do_centering = true, bool use_horizontal_separator = true, bool use_vertical_separator = true)
   {
-		if(do_centering) 
-			stream << "\\begin{center}\n";
+    if(do_centering) 
+      stream << "\\begin{center}\n";
 
-		stream << "\\begin{tabular}{";
-		if(use_vertical_separator) {
-			stream << "|";
-			for(size_t i = 0; i < _num_columns; ++i) 
-				stream << column_type << "|";
-		} else 
-			for(size_t i = 0; i < _num_columns; ++i) 
-				stream << column_type;
-		stream << "}\n";
+    stream << "\\begin{tabular}{";
+    if(use_vertical_separator) {
+      stream << "|";
+      for(size_t i = 0; i < _num_columns; ++i) 
+        stream << column_type << "|";
+    } else 
+      for(size_t i = 0; i < _num_columns; ++i) 
+        stream << column_type;
+    stream << "}\n";
 
-		if(use_horizontal_separator) 
-			stream << "\\hline\n";
+    if(use_horizontal_separator) 
+      stream << "\\hline\n";
 
     // Print out the headers
-		if(_num_columns > 0) 
-			stream << _headers[0];
+    if(_num_columns > 0) 
+      stream << _headers[0];
     for (unsigned int i = 1; i < _num_columns; i++)
       stream << " & " <<  _headers[i];
-		stream << "\\\\\n";
-		if(use_horizontal_separator) 
-			stream << "\\hline\n";
+    stream << "\\\\\n";
+    if(use_horizontal_separator) 
+      stream << "\\hline\n";
 
     // Now print the rows of the table
     for (auto & row : _data)
     {
       print_each_latex(row, stream);
-			stream << "\\\\";
-			if(use_horizontal_separator) 
-				stream << "\\hline\n";
+      stream << "\\\\";
+      if(use_horizontal_separator) 
+        stream << "\\hline\n";
     }
 
-		stream << "\\end{tabular}\n";
-		if(do_centering)
-			stream << "\\end{center}\n";
+    stream << "\\end{tabular}\n";
+    if(do_centering)
+      stream << "\\end{center}\n";
   }
   /**
    *  This ends the recursion
@@ -202,7 +201,7 @@ public:
   template <typename TupleType, typename StreamType>
   void print_each_latex(TupleType &&,
                   StreamType & /*stream*/,
-									size_t,
+                  size_t,
                   std::integral_constant<
                       size_t,
                       std::tuple_size<typename std::remove_reference<TupleType>::type>::value>)
@@ -245,9 +244,9 @@ public:
         stream << std::fixed << std::setprecision(2);
     }
 
-		if(idx != 0) 
-			stream << " & ";
-			
+    if(idx != 0) 
+      stream << " & ";
+      
 
     stream << val;
 
