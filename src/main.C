@@ -1,4 +1,4 @@
-#include "VariadicTable.h"
+#include "../include/VariadicTable.h"
 
 int
 main()
@@ -13,6 +13,7 @@ main()
     vt.addRow("Robert", 140.3, 27, "Fande");
 
     vt.print(std::cout);
+		vt.print_latex(std::cout);
   }
 
   // More Data
@@ -51,5 +52,6 @@ main()
     vt.addRow("      Console::outputStep", 5.8e-05, 0, 5.8e-05);
 
     vt.print(std::cout);
+		vt.print_latex(std::cout);
   }
 }

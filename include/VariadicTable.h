@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <ios>
+#include <system_error>
 #include <vector>
 #include <tuple>
 #include <type_traits>
@@ -149,6 +150,124 @@ public:
   {
     assert(precision.size() == std::tuple_size<DataTuple>::value);
     _precision = precision;
+  }
+
+  /**
+   * Print table date as latex code
+   */
+  template <typename StreamType>
+  void print_latex(StreamType & stream, char column_type = 'c', bool do_centering = true, bool use_horizontal_separator = true, bool use_vertical_separator = true)
+  {
+		if(do_centering) 
+			stream << "\\begin{center}\n";
+
+		stream << "\\begin{tabular}{";
+		if(use_vertical_separator) {
+			stream << "|";
+			for(size_t i = 0; i < _num_columns; ++i) 
+				stream << column_type << "|";
+		} else 
+			for(size_t i = 0; i < _num_columns; ++i) 
+				stream << column_type;
+		stream << "}\n";
+
+		if(use_horizontal_separator) 
+			stream << "\\hline\n";
+
+    // Print out the headers
+		if(_num_columns > 0) 
+			stream << _headers[0];
+    for (unsigned int i = 1; i < _num_columns; i++)
+      stream << " & " <<  _headers[i];
+		stream << "\\\\\n";
+		if(use_horizontal_separator) 
+			stream << "\\hline\n";
+
+    // Now print the rows of the table
+    for (auto & row : _data)
+    {
+      print_each_latex(row, stream);
+			stream << "\\\\";
+			if(use_horizontal_separator) 
+				stream << "\\hline\n";
+    }
+
+		stream << "\\end{tabular}\n";
+		if(do_centering)
+			stream << "\\end{center}\n";
+  }
+  /**
+   *  This ends the recursion
+   */
+  template <typename TupleType, typename StreamType>
+  void print_each_latex(TupleType &&,
+                  StreamType & /*stream*/,
+									size_t,
+                  std::integral_constant<
+                      size_t,
+                      std::tuple_size<typename std::remove_reference<TupleType>::type>::value>)
+  { }
+
+  /**
+   * This gets called on each item
+   */
+  template <std::size_t I,
+            typename TupleType,
+            typename StreamType,
+            typename = typename std::enable_if<
+                I != std::tuple_size<typename std::remove_reference<TupleType>::type>::value>::type>
+  void print_each_latex(TupleType && t, StreamType & stream, size_t idx, std::integral_constant<size_t, I>)
+  {
+    auto & val = std::get<I>(t);
+
+    // Set the precision
+    if (!_precision.empty())
+    {
+      assert(_precision.size() ==
+             std::tuple_size<typename std::remove_reference<TupleType>::type>::value);
+
+      stream << std::setprecision(_precision[I]);
+    }
+
+    // Set the format
+    if (!_column_format.empty())
+    {
+      assert(_column_format.size() ==
+             std::tuple_size<typename std::remove_reference<TupleType>::type>::value);
+
+      if (_column_format[I] == VariadicTableColumnFormat::SCIENTIFIC)
+        stream << std::scientific;
+
+      if (_column_format[I] == VariadicTableColumnFormat::FIXED)
+        stream << std::fixed;
+
+      if (_column_format[I] == VariadicTableColumnFormat::PERCENT)
+        stream << std::fixed << std::setprecision(2);
+    }
+
+		if(idx != 0) 
+			stream << " & ";
+			
+
+    stream << val;
+
+    // Unset the format
+    if (!_column_format.empty())
+    {
+      // Because "stream << std::defaultfloat;" won't compile with old GCC or Clang
+      stream.unsetf(std::ios_base::floatfield);
+    }
+
+    // Recursive call to print the next item
+    print_each_latex(std::forward<TupleType>(t), stream, idx + 1, std::integral_constant<size_t, I + 1>());
+  }
+  /**
+   * his is what gets called first
+   */
+  template <typename TupleType, typename StreamType>
+  void print_each_latex(TupleType && t, StreamType & stream)
+  {
+    print_each_latex(std::forward<TupleType>(t), stream, 0, std::integral_constant<size_t, 0>());
   }
 
 protected:
